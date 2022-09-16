@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style>
+			
+			*{padding: 0; margin:0;}
+			
+			canvas{
+				background: #eee; display:block; margin:0 auto;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+		// 6. 충돌 감지 + 길어지는 지렁이
+		// collisionDection 함수-> 벽돌 객체배열의 status값이 1이면 지렁이 머리의 좌표와 비교한다.
+		// 만약 일치하면, 지렁이 꼬리의 좌표 복사해서 새로운 지렁이 push를 한다.
+		// 
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		var Gap = 20;
+		// 지렁이 머리, 꼬리의 시작위치
+		var hX = (canvas.width-20)/2 +3; // 라인 안쪽으로 끌어오기 위해서 +3
+		var hY = canvas.height-80 	 +3;
+		// 지렁이의 크기
+		var RectX = 13.5;
+		var RectY = 13.5;
+		// 지렁이 이동
+		var dx = 0;
+		var dy = -Gap;
+		// 지렁이 객체배열
+		var Worm=[];
+		for(var i=0; i<4; i++){
+			Worm.push({x:hX,y:hY+i*Gap});					
+		}
+		//오른쪽,왼쪽 버튼
+		var rightPressed = false;
+		var leftPressed = false;
+		//이벤트리스너
+		document.addEventListener("keydown", keyDownHandler, false);
+		document.addEventListener("keyup", keyUpHandler, false);
+		// 2번 clock을 위한 cnt 변수
+		var cnt=0;
+		// 벽돌 객체배열
+		var bricks=[];
+		for(var c=0; c<25; c++){	// 가로,세로 각각 25개씩 있다. 500/20
+			bricks[c] = [];
+			for(var r=0; r<25; r++){
+					bricks[c][r] = {x:0, y:0, status:0};
+			}
+		}
+		
+		//@@@ 새로운 함수 @@@
+		// 6. 충돌 감지
+		function collisionDection(){
+			for(var c=0; c<25; c++){
+				for(var r=0; r<25; r++){
+					var b = bricks[c][r];
+					if(b.status == 1){
+						if(Worm[0].x == b.x && Worm[0].y == b.y){
+							var newX = Worm[Worm.length-1].x;
+							var newY = Worm[Worm.length-1].y;
+							Worm.push({x:newX,y:newY});
+						}
+					}
+				}
+			}
+		}
+		
+		//5. 벽돌 만들기 함수
+		function makeBricks(){
+			var bX = Math.floor(Math.random()*24)+1;	// 0-24 사이의 변수 생성
+			var bY = Math.floor(Math.random()*24)+1;
+			bricks[bX][bY].x= bX*Gap+3;					// (변수 * 20)+3으로 화면, 라인에 맞춰 좌표 생성 
+			bricks[bX][bY].y= bY*Gap+3;					
+			bricks[bX][bY].status=1;					// status = 1 -> 벽돌생성
+		}
+		//5. 벽돌 그리기 함수
+		function drawBricks(){
+			for(var c=0; c<25; c++){
+					for(var r=0; r<25; r++){
+						if(bricks[c][r].status == 1){
+							ctx.beginPath();
+							ctx.rect(bricks[c][r].x,bricks[c][r].y,RectX,RectY);
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}
+		}
+		
+		//4. 키 올리기 함수
+		function keyUpHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = false;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = false;
+			}
+		}
+		//4. 키 누르기 함수
+		function keyDownHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = true;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = true;
+			}
+		}
+		//4. 지렁이 방향조정
+		function control(){
+			if(rightPressed){
+				if(dx == 0 && dy == -Gap){dx = Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = -Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = -Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = Gap;}// 우로 가는중		
+			}
+			else if(leftPressed){
+				if(dx == 0 && dy == -Gap){dx = -Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = -Gap;}// 우로 가는중	
+			}
+		}
+		
+		
+		// 2->3. 지렁이 그리기
+		function drawWorm(){
+			for(var i=0; i<Worm.length; i++){
+				ctx.beginPath();
+				ctx.rect(Worm[i].x,Worm[i].y,RectX,RectY);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}	
+		}
+		
+		// 1. 선 그리기
+		function drawLine(){
+			for(var i=20; i<500; i+=20){
+				ctx.beginPath();
+				ctx.moveTo(i,0);
+				ctx.lineTo(i,500);
+				ctx.moveTo(0,i);
+				ctx.lineTo(500,i);
+				ctx.stroke();
+			}
+		}
+		
+		// 전체 그리기
+		// @@@ 5->6 수정: collsionDection 추가
+		function draw(){
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+			drawLine();
+			drawWorm();
+			control();
+			collisionDection();
+		// 5. 벽돌 10초에 한번씩 생성
+			if(!(cnt%20)){
+				makeBricks();
+			}
+			drawBricks();
+			cnt++;
+		// 3. 지렁이 몸(객체배열) 좌표이동
+			for(var i=Worm.length-1; i>0; i--){
+				Worm[i].x = Worm[i-1].x;
+				Worm[i].y = Worm[i-1].y;
+			}
+			Worm[0].x += dx;
+			Worm[0].y += dy;
+		}
+		setInterval(draw, 500);
+		</script>
+	</body>
+</html> 

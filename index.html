@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style>
+			
+			*{padding: 0; margin:0;}
+			
+			canvas{
+				background: #eee; display:block; margin:0 auto;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		var Gap = 20;
+		var hX = (canvas.width-20)/2 +3; 
+		var hY = canvas.height-80 	 +3;
+		var RectX = 13.5;
+		var RectY = 13.5;
+		var dx = 0;
+		var dy = -Gap;
+		var Worm=[];
+		for(var i=0; i<4; i++){
+			Worm.push({x:hX,y:hY+i*Gap});					
+		}
+		var rightPressed = false;
+		var leftPressed = false;
+		document.addEventListener("keydown", keyDownHandler, false);
+		document.addEventListener("keyup", keyUpHandler, false);
+		var cnt=0;
+		var bricks=[];
+		for(var c=0; c<25; c++){
+			bricks[c] = [];
+			for(var r=0; r<25; r++){
+					bricks[c][r] = {x:0, y:0, status:0};
+			}
+		}
+		var lives = 3;
+		var score = 0;
+		var bodyLength=Worm.length;
+		
+		function drawScore(){
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Score: "+score, 10,18);
+		}
+		function drawLength(){
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Length: "+bodyLength, 8,37);
+		}		
+		function drawLives(){
+			ctx.font = "16px Arial";
+			ctx.fillStyle = "#0095DD";
+			ctx.fillText("Lives: "+lives, canvas.width-65, 18);
+		}	
+		function check(){
+			if(Worm[0].x < 0 || Worm[0].x > canvas.width || Worm[0].y < 0 || Worm[0].y > canvas.height){
+				lives--;
+				if(!lives){
+					alert("Game Over!~");
+					document.location.reload();
+				}else{
+					for(var i=Worm.length; i>0; i--){
+						Worm.pop();
+					}
+					for(var i=0; i<4; i++){			
+						Worm.push({x:hX,y:hY+i*20});					
+					}
+					dx = 0;							
+					dy = -Gap;
+					bodyLength=Worm.length;		
+					for(var c=0; c<25; c++){	
+						for(var r=0; r<25; r++){
+							if(bricks[c][r].status == 1){
+								bricks[c][r].status =0;
+							} 
+						}
+					}
+				}
+			}
+			for(var i=1; i<Worm.length;i++){
+				if(Worm[0].x == Worm[i].x && Worm[0].y == Worm[i].y){
+					lives--;
+					if(!lives){
+						alert("Game Over!~");
+						document.location.reload();
+					}else{
+						for(var i=Worm.length; i>0; i--){
+							Worm.pop();
+						}
+						for(var i=0; i<4; i++){		
+							Worm.push({x:hX,y:hY+i*20});					
+						}
+						dx = 0;						
+						dy = -Gap;
+						bodyLength=Worm.length;		
+						for(var c=0; c<25; c++){	
+							for(var r=0; r<25; r++){
+								if(bricks[c][r].status == 1){
+									bricks[c][r].status =0;
+								} 
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		function collisionDection(){
+			for(var c=0; c<25; c++){
+				for(var r=0; r<25; r++){
+					var b = bricks[c][r];
+					if(b.status == 1){
+						if(Worm[0].x == b.x && Worm[0].y == b.y){
+							var newX = Worm[Worm.length-1].x;
+							var newY = Worm[Worm.length-1].y;
+							Worm.push({x:newX,y:newY});
+							b.status = 0;
+							score++;					
+							bodyLength=Worm.length;		
+						}
+					}
+				}
+			}
+		}
+		function makeBricks(){
+			var bX = Math.floor(Math.random()*24)+1;	
+			var bY = Math.floor(Math.random()*24)+1;
+			bricks[bX][bY].x= bX*Gap+3;					 
+			bricks[bX][bY].y= bY*Gap+3;					
+			bricks[bX][bY].status=1;					
+		}
+		function drawBricks(){
+			for(var c=0; c<25; c++){
+					for(var r=0; r<25; r++){
+						if(bricks[c][r].status == 1){
+							ctx.beginPath();
+							ctx.rect(bricks[c][r].x,bricks[c][r].y,RectX,RectY);
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}
+		}
+		function keyUpHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = false;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = false;
+			}
+		}
+		function keyDownHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = true;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = true;
+			}
+		}
+		function control(){
+			if(rightPressed){
+				if(dx == 0 && dy == -Gap){dx = Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = -Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = -Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = Gap;}// 우로 가는중		
+			}
+			else if(leftPressed){
+				if(dx == 0 && dy == -Gap){dx = -Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = -Gap;}// 우로 가는중	
+			}
+		}		
+		function drawWorm(){
+			for(var i=0; i<Worm.length; i++){
+				ctx.beginPath();
+				ctx.rect(Worm[i].x,Worm[i].y,RectX,RectY);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}	
+		}		
+		function drawLine(){
+			for(var i=20; i<500; i+=20){
+				ctx.beginPath();
+				ctx.moveTo(i,0);
+				ctx.lineTo(i,500);
+				ctx.moveTo(0,i);
+				ctx.lineTo(500,i);
+				ctx.stroke();
+			}
+		}
+		
+		function draw(){
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+			drawLine();
+			drawWorm();
+			control();
+			collisionDection();
+			check();
+			drawLives();
+			drawScore();
+			drawLength();
+			if(!(cnt%20)){
+				makeBricks();
+			}
+			drawBricks();
+			cnt++;
+			for(var i=Worm.length-1; i>0; i--){
+				Worm[i].x = Worm[i-1].x;
+				Worm[i].y = Worm[i-1].y;
+			}
+			Worm[0].x += dx;
+			Worm[0].y += dy;
+		}
+		setInterval(draw, 500);
+		</script>
+	</body>
+</html> 

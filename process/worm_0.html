@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style>
+			
+			*{padding: 0; margin:0;}
+			
+			canvas{
+				background: #eee; display:block; margin:0 auto;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+		// 0. 캔버스의 기본적인 사용법, 도형, 줄그리기 등에 대해서 알아본다.
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.moveTo(0,0);
+		ctx.lineTo(500,500);
+		ctx.stroke();
+		
+		ctx.beginPath();
+		ctx.rect(30,30,50,50);
+		ctx.fillStyle = "#FF0000";
+		ctx.fill();
+		ctx.stroke();
+		
+		ctx.beginPath();
+		ctx.arc(250,250,30, 0, Math.PI*2, false);
+		ctx.fillStyle = "#00FF00";
+		ctx.fill();
+		ctx.stroke();
+		
+		</script>
+	</body>
+</html> 

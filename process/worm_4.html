@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style>
+			
+			*{padding: 0; margin:0;}
+			
+			canvas{
+				background: #eee; display:block; margin:0 auto;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+		// 4. 지렁이 이동 조작하기
+		// 키보드 조작 기능 추가 -> 이벤트 addListener객체를 이용 -> right,left 버튼을 변경 -> control함수로 right,left 변경 여부 파악후 -> dx,dy값 조작
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		var Gap = 20;
+		// 지렁이 머리, 꼬리의 시작위치
+		var hX = (canvas.width-20)/2 +3; // 라인 안쪽으로 끌어오기 위해서 +3
+		var hY = canvas.height-80 	 +3;
+		// 지렁이의 크기
+		var RectX = 13.5;
+		var RectY = 13.5;
+		// 지렁이 이동
+		var dx = 0;
+		var dy = -Gap;
+		// 지렁이 객체배열
+		var Worm=[];
+		for(var i=0; i<4; i++){
+			Worm.push({x:hX,y:hY+i*Gap});					
+		}
+		//@@@ 새로운 변수 @@@
+		var rightPressed = false;
+		var leftPressed = false;
+		//@@@ 새로운 이벤트 @@@
+		document.addEventListener("keydown", keyDownHandler, false);
+		document.addEventListener("keyup", keyUpHandler, false);
+		
+		//@@@ 새로운 함수 @@@
+		function keyUpHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = false;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = false;
+			}
+		}
+		function keyDownHandler(e){
+			if(e.keyCode == 39){
+				rightPressed = true;
+			}
+			else if(e.keyCode == 37){
+				leftPressed = true;
+			}
+		}
+		function control(){
+			if(rightPressed){
+				if(dx == 0 && dy == -Gap){dx = Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = -Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = -Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = Gap;}// 우로 가는중		
+			}
+			else if(leftPressed){
+				if(dx == 0 && dy == -Gap){dx = -Gap; dy = 0;} // 위로 가는중		
+				else if(dx == 0 && dy == Gap){dx = Gap; dy = 0;} // 아래로 가는중	
+				else if(dx == -Gap && dy == 0){dx = 0; dy = Gap;} // 좌로 가는중	
+				else if(dx == Gap && dy == 0) {dx = 0; dy = -Gap;}// 우로 가는중	
+			}
+		}
+		
+		
+		// 2->3. 지렁이 그리기
+		function drawWorm(){
+			for(var i=0; i<Worm.length; i++){
+				ctx.beginPath();
+				ctx.rect(Worm[i].x,Worm[i].y,RectX,RectY);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}	
+		}
+		
+		// 1. 선 그리기	
+		function drawLine(){
+			for(var i=20; i<500; i+=20){
+				ctx.beginPath();
+				ctx.moveTo(i,0);
+				ctx.lineTo(i,500);
+				ctx.moveTo(0,i);
+				ctx.lineTo(500,i);
+				ctx.stroke();
+			}
+		}
+		
+		// 전체 그리기
+		// @@@ 3->4 수정 : control 함수를 이용해 right, left 버튼이 눌려있으면 지렁이의 방향(dx,dy)을 변경
+		function draw(){
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+			drawLine();
+			drawWorm();
+			control();	//@@
+			
+		// 지렁이 몸(객체배열) 좌표이동
+			for(var i=Worm.length-1; i>0; i--){
+				Worm[i].x = Worm[i-1].x;
+				Worm[i].y = Worm[i-1].y;
+			}
+			Worm[0].x += dx;
+			Worm[0].y += dy;
+		}
+		setInterval(draw, 500);
+		</script>
+	</body>
+</html> 
